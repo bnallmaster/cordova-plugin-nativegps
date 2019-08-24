@@ -1,0 +1,19 @@
+{
+  "name": "cordova-plugin-nativegps",
+  "version": "0.0.1",
+  "description": "Plugin for getting native GPS info",
+  "cordova": {
+    "id": "cordova-plugin-nativegps",
+    "platforms": [
+      "ios",
+      "android"
+    ]
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-ios",
+    "cordova-android"
+  ],
+  "author": "Taylor Korensky",
+  "license": "ISC"
+}

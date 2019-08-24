@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="cordova-plugin-nativegps" version="0.0.1" 
+    xmlns="http://apache.org/cordova/ns/plugins/1.0" 
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>NativeGps</name>
+    <js-module name="NativeGps" src="www/NativeGps.js">
+        <clobbers target="cordova.plugins.NativeGps" />
+    </js-module>
+    <platform name="ios">
+        <config-file parent="/*" target="config.xml">
+            <feature name="NativeGps">
+                <param name="ios-package" value="NativeGps" />
+            </feature>
+        </config-file>
+        <source-file src="src/ios/NativeGps.m" />
+  
+    </platform>
+    <platform name="android">
+        <framework custom="true" src="src/android/nativegps-sdk.gradle" type="gradleReference"/>
+        <config-file parent="/*" target="res/xml/config.xml">
+            <feature name="NativeGps">
+                <param name="android-package" value="com.appsky.plugin.NativeGps" />
+            </feature>
+        </config-file>
+        <config-file parent="/*" target="AndroidManifest.xml">
+         <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+         <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+        </config-file>
+        <source-file src="src/android/NativeGps.java" target-dir="src/cordova-plugin-nativegps/NativeGps" />
+    </platform>
+</plugin>
