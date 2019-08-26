@@ -38,7 +38,7 @@ public class NativeGps extends CordovaPlugin {
     CordovaInterface cordova;
     private static final String TAG = "NativeGPSPlugin";
     public static final String LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
-    CallbackContext permissionsCallbackContext;
+    CallbackContext locationCallbackContext;
 
     @Override
     public void initialize(CordovaInterface cor, CordovaWebView webView) {
@@ -50,23 +50,32 @@ public class NativeGps extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if (action.equals("getLastLocation")) {
-            String message = args.getString(0);
-            this.getLastLocation(message, callbackContext);
-            return true;
-        }
-        else if (action.equals("getLocationPermissions")) {
-            String message = args.getString(0);
-            this.getLocationPermissions(message, callbackContext);
+        if (action.equals("getLocation")) {
+           // String message = args.getString(0);
+            this.getLocation(callbackContext);
             return true;
         }
         return false;
     }
 
-    private void getLastLocation(String message, CallbackContext callbackContext) {
+    private void getLocation(CallbackContext callbackContext) {
+        
+        this.locationCallbackContext = callbackContext;
+        if(!cordova.hasPermission(LOCATION))
+        {
+            cordova.requestPermission(this, 0, LOCATION);
+        }
+        else{
+            this.getGPS();
+        }
+       
+    }
+
+    private void getGPS(){
 
         if(cordova.hasPermission(LOCATION)){
-            mFusedLocationClient.getLastLocation()
+           
+            this.mFusedLocationClient.getLastLocation()
             .addOnCompleteListener(this.cordova.getActivity(), new OnCompleteListener<Location>() {
                 @Override
                 public void onComplete(@NonNull Task<Location> task) {
@@ -74,29 +83,21 @@ public class NativeGps extends CordovaPlugin {
                         mGetedLocation = task.getResult();
                         currentLat = mGetedLocation.getLatitude();
                         currentLng = mGetedLocation.getLongitude();
-                        Log.d(TAG, "Latitude : " + currentLat + "\nLongitude : " + currentLng);
-                        //  locationTv.setText("Latitude : " + currentLat + "\nLongitude : " + currentLng);
-                        callbackContext.success("{status: true, message: {lat: " + currentLat + ",lng: " + currentLng + "}}");
+                       // Log.d(TAG, "Latitude : " + currentLat + "\nLongitude : " + currentLng);
+                        String latLng = "{lat: " + currentLat + ", lng: " + currentLng + "}";
+                        sendResponse("true", latLng, locationCallbackContext);
+
                     } else {
-                        Log.e(TAG, "no location detected");
-                        Log.w(TAG, "getLastLocation:exception", task.getException());
-                        callbackContext.error("{status: false, message: " +  task.getException() + "}");
+                        
+                        String message = "Error getting location.";
+                        sendResponse("false", message , locationCallbackContext);
                     }
                 }
             });
         }
         else{
-            callbackContext.error("{status: false, message: 'Missing location permissions'}");
-        }
-    }
-
-    private void getLocationPermissions(String message, CallbackContext callbackContext) {
-        
-        this.permissionsCallbackContext = callbackContext;
-
-        if(!cordova.hasPermission(LOCATION))
-        {
-            this.cordova.requestPermission(this, 0, LOCATION);
+            String message = "Permission request failed on GPS call.";
+            this.sendResponse("false", message, this.locationCallbackContext);
         }
     }
 
@@ -107,11 +108,35 @@ public class NativeGps extends CordovaPlugin {
         for(int r:grantResults)
          {
            if(r == PackageManager.PERMISSION_DENIED)
-           {
-                this.permissionsCallbackContext.error("{status: false, message: 'Permission request failed'}");
+           {    String message = "Permission request failed.";
+                this.sendResponse("false", message, this.locationCallbackContext);
            }
         }
+        if(cordova.hasPermission(LOCATION)){
+             this.getGPS();
+        }
+    }
 
-       this.permissionsCallbackContext.success("{status: true, message: 'Permission request success'}");
+    private void sendResponse(String success, String message, CallbackContext callback){
+       
+        try {
+           
+            if(success.equals("true") == true){
+                String jsonString = "{success: " + success + ", message: " +  message + "}";
+                JSONObject json = new JSONObject(jsonString);
+                callback.success(json);
+            }
+            else{
+                String jsonString = "{success: " + success + ", message: '" +  message.toString() + "'}";
+                JSONObject json = new JSONObject(jsonString);
+                callback.error(json);
+            }
+          
+        } catch (Throwable t) {
+
+            callback.error("{success: false, message: Error parsing JSON response.}" + t);
+           
+        }
+
     }
 }

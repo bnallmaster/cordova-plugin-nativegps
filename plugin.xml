@@ -13,7 +13,16 @@
             </feature>
         </config-file>
         <source-file src="src/ios/NativeGps.m" />
-  
+        <framework src="CoreLocation.framework" />
+
+        <preference name="LOCATION_USAGE_DESCRIPTION" default="Need location access to find things nearby." />
+        <config-file target="*-Info.plist" parent="NSLocationWhenInUseUsageDescription">
+            <string>$LOCATION_USAGE_DESCRIPTION</string>
+        </config-file>
+        <config-file target="*-Info.plist" parent="NSLocationAlwaysAndWhenInUseUsageDescription">
+            <string>$LOCATION_USAGE_DESCRIPTION</string>
+        </config-file>
+    
     </platform>
     <platform name="android">
         <framework custom="true" src="src/android/nativegps-sdk.gradle" type="gradleReference"/>
