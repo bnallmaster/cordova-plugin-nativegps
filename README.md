@@ -41,7 +41,7 @@ export class HomePage {
 
 ## Data Response (JSON) 
 
-```json
+```
 {success : true,
 message: 
 	{lat: 41.50309848, 
